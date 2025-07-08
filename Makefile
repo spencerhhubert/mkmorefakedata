@@ -3,4 +3,4 @@ run:
 check:
 	pyright --pythonpath "/opt/homebrew/opt/python@3.11/libexec/bin/python" src
 format:
-    ruff format robot
+	ruff format src
