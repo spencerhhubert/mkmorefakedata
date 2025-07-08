@@ -31,28 +31,26 @@ class Op:
 # and 4,4, you might set values at two indices from the left and two from the 
 # right so that it remains symmetrical.
 
-# Init operations - create a grid of specific shape from nothing
+# Init operations - initialize values on existing empty grid
 INIT_OPS = [
     Op(OpType.INIT, "random_grid", """
-shape = (8, 8)
-GRID = Grid(shape)
-GRID.data = np.random.randint(0, MAX_VALUE + 1, shape)
+GRID.data = np.random.randint(0, MAX_VALUE + 1, GRID.shape)
 SELECTED = None
 """),
     
     Op(OpType.INIT, "zeros_grid", """
-shape = (10, 10)
-GRID = Grid(shape)
-GRID.data = np.zeros(shape, dtype=int)
+GRID.data = np.zeros(GRID.shape, dtype=int)
 SELECTED = None
 """),
     
     Op(OpType.INIT, "checkerboard", """
-shape = (8, 8)
-GRID = Grid(shape)
-for i in range(shape[0]):
-    for j in range(shape[1]):
-        GRID.data[i, j] = MAX_VALUE if (i + j) % 2 == 0 else 0
+if len(GRID.shape) >= 2:
+    for i in range(GRID.shape[0]):
+        for j in range(GRID.shape[1]):
+            GRID.data[i, j] = MAX_VALUE if (i + j) % 2 == 0 else 0
+else:
+    for i in range(GRID.shape[0]):
+        GRID.data[i] = MAX_VALUE if i % 2 == 0 else 0
 SELECTED = None
 """)
 ]
@@ -65,34 +63,32 @@ pass
 """),
     
     Op(OpType.RESHAPE, "flatten_reshape", """
-if GRID is not None:
-    total_size = GRID.size
-    GRID = GRID.reshape((total_size,))
+total_size = GRID.size
+GRID = GRID.reshape((total_size,))
 """)
 ]
 
 # Change operations - change values of GRID and SELECTED variables
 CHANGE_OPS = [
     Op(OpType.CHANGE, "select_corners", """
-if GRID is not None:
-    if len(GRID.shape) >= 2:
-        h, w = GRID.shape[:2]
-        if h > 0 and w > 0:
-            SELECTED = [(0, 0), (0, w-1), (h-1, 0), (h-1, w-1)]
-        else:
-            SELECTED = []
+if len(GRID.shape) >= 2:
+    h, w = GRID.shape[:2]
+    if h > 0 and w > 0:
+        SELECTED = [(0, 0), (0, w-1), (h-1, 0), (h-1, w-1)]
     else:
-        h = GRID.shape[0]
-        if h > 1:
-            SELECTED = [(0,), (h-1,)]
-        elif h == 1:
-            SELECTED = [(0,)]
-        else:
-            SELECTED = []
+        SELECTED = []
+else:
+    h = GRID.shape[0]
+    if h > 1:
+        SELECTED = [(0,), (h-1,)]
+    elif h == 1:
+        SELECTED = [(0,)]
+    else:
+        SELECTED = []
 """),
     
     Op(OpType.CHANGE, "increment_selected", """
-if GRID is not None and SELECTED is not None:
+if SELECTED is not None:
     for pos in SELECTED:
         if len(pos) == len(GRID.shape):
             current_val = GRID.data[pos]
@@ -100,12 +96,12 @@ if GRID is not None and SELECTED is not None:
 """),
     
     Op(OpType.CHANGE, "mirror_horizontal", """
-if GRID is not None and len(GRID.shape) >= 2:
+if len(GRID.shape) >= 2:
     GRID.data = np.fliplr(GRID.data)
 """),
     
     Op(OpType.CHANGE, "add_border", """
-if GRID is not None and len(GRID.shape) >= 2:
+if len(GRID.shape) >= 2:
     h, w = GRID.shape[:2]
     # Set border pixels to max value
     GRID.data[0, :] = MAX_VALUE
@@ -115,7 +111,7 @@ if GRID is not None and len(GRID.shape) >= 2:
 """),
     
     Op(OpType.CHANGE, "center_cross", """
-if GRID is not None and len(GRID.shape) >= 2:
+if len(GRID.shape) >= 2:
     h, w = GRID.shape[:2]
     mid_h, mid_w = h // 2, w // 2
     # Create cross pattern at center
@@ -124,30 +120,29 @@ if GRID is not None and len(GRID.shape) >= 2:
 """),
     
     Op(OpType.CHANGE, "select_random", """
-if GRID is not None:
-    if len(GRID.shape) == 1:
-        h = GRID.shape[0]
-        if h > 0:
-            num_select = min(3, h)
-            indices = np.random.choice(h, num_select, replace=False)
-            SELECTED = [(i,) for i in indices]
-        else:
-            SELECTED = []
-    elif len(GRID.shape) == 2:
-        grid_shape = GRID.shape
-        h, w = grid_shape[0], grid_shape[1]
-        if h > 0 and w > 0:
-            num_select = min(5, h * w)
-            flat_indices = np.random.choice(h * w, num_select, replace=False)
-            SELECTED = []
-            for idx in flat_indices:
-                row = idx // w
-                col = idx % w
-                SELECTED.append((row, col))
-        else:
-            SELECTED = []
+if len(GRID.shape) == 1:
+    h = GRID.shape[0]
+    if h > 0:
+        num_select = min(3, h)
+        indices = np.random.choice(h, num_select, replace=False)
+        SELECTED = [(i,) for i in indices]
     else:
         SELECTED = []
+elif len(GRID.shape) == 2:
+    grid_shape = GRID.shape
+    h, w = grid_shape[0], grid_shape[1]
+    if h > 0 and w > 0:
+        num_select = min(5, h * w)
+        flat_indices = np.random.choice(h * w, num_select, replace=False)
+        SELECTED = []
+        for idx in flat_indices:
+            row = idx // w
+            col = idx % w
+            SELECTED.append((row, col))
+    else:
+        SELECTED = []
+else:
+    SELECTED = []
 """)
 ]
 

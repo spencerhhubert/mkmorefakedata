@@ -1,7 +1,8 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from ops import Op, OpType
 from grid import Grid
 from config import Config
+import random
 
 class Algorithm:
     def __init__(self, generate_ops: List[Op], transform_ops: List[Op]):
@@ -26,11 +27,16 @@ class Algorithm:
                 raise ValueError("Transform operations after RESHAPE must be CHANGE ops")
     
     def execute(self, config: Config) -> tuple[Optional[Grid], Optional[Grid]]:
+        # Choose random shape and create empty grid
+        shape = random.choice(config.shapes)
+        grid = Grid(shape)
+        
         # Initialize context
-        context: Dict[str, Any] = {"GRID": None, "SELECTED": None}
+        context: Dict[str, Any] = {"GRID": grid, "SELECTED": None}
         
         # Execute generation phase
         config.logger.info("=== GENERATION PHASE ===")
+        config.logger.info(f"Grid shape: {shape}")
         for op in self.generate_ops:
             config.logger.info(f"Executing: {op.name} ({op.op_type.value})")
             op.execute(config, context)

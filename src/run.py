@@ -1,5 +1,6 @@
 from typing import List
 import numpy as np
+import argparse
 from algo import Algorithm
 from ops import get_random_ops
 from viz import visualize_algo, visualize_multiple_algos
@@ -10,7 +11,13 @@ def create_random_algorithm(config: Config) -> Algorithm:
     return Algorithm(generate_ops, transform_ops)
 
 def main() -> None:
-    config = mkConfig()
+    parser = argparse.ArgumentParser(description='Data Generation Program')
+    parser.add_argument('--save-individual', action='store_true', help='Save individual algorithm visualizations')
+    parser.add_argument('--save-algos', action='store_true', default=True, help='Save combined algorithm visualizations')
+    parser.add_argument('--no-save-algos', action='store_false', dest='save_algos', help='Do not save combined algorithm visualizations')
+    
+    args = parser.parse_args()
+    config = mkConfig(args.save_individual, args.save_algos)
 
     print("Data Generation Program")
     print("=" * 50)
@@ -29,16 +36,18 @@ def main() -> None:
     print(f"\nCreated {len(algorithms)} algorithms")
 
     # Visualize individual algorithm
-    # if algorithms:
-    #     print("\nVisualizing first algorithm individually...")
-    #     from datetime import datetime
-    #     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    #     individual_filename = f"grids/individual_algo_{timestamp}.jpg"
-    #     visualize_algo(config, algorithms[0], individual_filename)
-    #     print(f"Individual algorithm saved to {individual_filename}")
+    if algorithms and config.save_individual:
+        print("\nVisualizing first algorithm individually...")
+        from datetime import datetime
+        import os
+        os.makedirs('grids', exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        individual_filename = f"grids/individual_algo_{timestamp}.jpg"
+        visualize_algo(config, algorithms[0], individual_filename)
+        print(f"Individual algorithm saved to {individual_filename}")
 
     # Visualize multiple algorithms
-    if len(algorithms) > 1:
+    if len(algorithms) > 1 and config.save_algos:
         print("\nVisualizing all algorithms together...")
         visualize_multiple_algos(config, algorithms)
 
