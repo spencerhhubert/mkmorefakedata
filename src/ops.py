@@ -152,10 +152,12 @@ if GRID is not None:
 ]
 
 def get_random_ops(config: Config) -> Tuple[List[Op], List[Op]]:
-    generate_ops = [np.random.choice(INIT_OPS)]
-    generate_ops.extend(np.random.choice(CHANGE_OPS, size=np.random.randint(1, 4)))
+    import random
     
-    transform_ops = [np.random.choice(RESHAPE_OPS)]
-    transform_ops.extend(np.random.choice(CHANGE_OPS, size=np.random.randint(1, 3)))
+    generate_ops = [random.choice(INIT_OPS)]
+    generate_ops.extend([random.choice(CHANGE_OPS) for _ in range(np.random.randint(1, 4))])
+    
+    transform_ops = [random.choice(RESHAPE_OPS)]
+    transform_ops.extend([random.choice(CHANGE_OPS) for _ in range(np.random.randint(1, 3))])
     
     return generate_ops, transform_ops

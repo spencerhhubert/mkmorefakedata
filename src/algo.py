@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from ops import Op, OpType
 from grid import Grid
 from config import Config
@@ -25,7 +25,7 @@ class Algorithm:
             if op.op_type != OpType.CHANGE:
                 raise ValueError("Transform operations after RESHAPE must be CHANGE ops")
     
-    def execute(self, config: Config) -> tuple[Grid, Grid]:
+    def execute(self, config: Config) -> tuple[Optional[Grid], Optional[Grid]]:
         # Initialize context
         context: Dict[str, Any] = {"GRID": None, "SELECTED": None}
         
